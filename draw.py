@@ -16,7 +16,7 @@ class Draw:
 
     def update(self, data, time):
         self.ax.cla()
-        self.ax.set(xlabel='time(s)', ylabel='avg_EAR', title='EAR')
+        self.ax.set(xlabel="time(s)", ylabel="avg_EAR", title="EAR")
         self.ax.grid()
         self.i = self.i + time
         self.t.append(self.i)

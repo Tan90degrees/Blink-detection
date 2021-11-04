@@ -38,10 +38,18 @@ class Ui_MainWindow(object):
         QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
-        self.pushButton.setText(QCoreApplication.translate("MainWindow", u"Blink", None))
-        self.pushButton_2.setText(QCoreApplication.translate("MainWindow", u"Up_Data", None))
-        self.pushButton_3.setText(QCoreApplication.translate("MainWindow", u"Close_Data", None))
+        MainWindow.setWindowTitle(
+            QCoreApplication.translate("MainWindow", u"MainWindow", None)
+        )
+        self.pushButton.setText(
+            QCoreApplication.translate("MainWindow", u"Blink", None)
+        )
+        self.pushButton_2.setText(
+            QCoreApplication.translate("MainWindow", u"Up_Data", None)
+        )
+        self.pushButton_3.setText(
+            QCoreApplication.translate("MainWindow", u"Close_Data", None)
+        )
 
 
 if __name__ == "__main__":

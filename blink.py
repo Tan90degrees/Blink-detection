@@ -3,15 +3,23 @@ import dlib
 import getpath
 import camera
 import draw
+import time
+import get_model
 from eye import ear_value
 from imutils import face_utils
 
 
 def check_blink():
+    get_model.download_model()
+    equal_ear_old = 0
+    tStart = None
+    blink_time = 0
     THRESHOLD = 0.3
-    AVG_THRESHOLD = 0.25
-    pic_path = getpath.get_3rd_path('result', 'line.png')
-    shape_detector_path = getpath.get_3rd_path('models', 'shape_predictor_68_face_landmarks.dat')
+    AVG_THRESHOLD = 0.15
+    pic_path = getpath.get_3rd_path("result", "line.png")
+    shape_detector_path = getpath.get_3rd_path(
+        "models", "shape_predictor_68_face_landmarks.dat"
+    )
     detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor(shape_detector_path)
     Cam = camera.Camera(0)
@@ -25,7 +33,7 @@ def check_blink():
         gray_frame = cv.cvtColor(video_frame, cv.COLOR_BGR2GRAY)
         checks = detector(gray_frame, 0)
         for check in checks:
-            print('-' * 40)
+            print("-" * 40)
             points = predictor(gray_frame, check)
             np_points = face_utils.shape_to_np(points)
             left_points = np_points[36:42]
@@ -34,21 +42,108 @@ def check_blink():
             right_ear = ear_value(right_points)
             equal_ear = (left_ear + right_ear) / 2
             drawline.update(equal_ear, 0.033)
-            if right_ear <= THRESHOLD:
-                print('Right eye blink!')
-            if left_ear <= THRESHOLD:
-                print('Left eye blink!')
-            if equal_ear <= AVG_THRESHOLD:
-                print('All eyes blink!')
+            if equal_ear < AVG_THRESHOLD:
+                equal_ear_old = equal_ear
+                if tStart == None:
+                    tStart = time.time()
+                tDur = time.time() - tStart
+                blink_time = blink_time + tDur
+                # if right_ear <= THRESHOLD:
+                #     print("Right eye blink!")
+                # if left_ear <= THRESHOLD:
+                #     print("Left eye blink!")
+                # if equal_ear <= AVG_THRESHOLD:
+                #     print("All eyes blink!")
+                cv.putText(
+                    video_frame,
+                    "left_ear: {:.3f}".format(left_ear),
+                    (10, 30),
+                    cv.FONT_HERSHEY_SIMPLEX,
+                    0.75,
+                    (255, 0, 0),
+                    1,
+                )
+                cv.putText(
+                    video_frame,
+                    "right_ear: {:.3f}".format(right_ear),
+                    (10, 50),
+                    cv.FONT_HERSHEY_SIMPLEX,
+                    0.75,
+                    (255, 0, 0),
+                    1,
+                )
+                cv.putText(
+                    video_frame,
+                    "blink_count: {:d}".format(blink_count),
+                    (250, 30),
+                    cv.FONT_HERSHEY_SIMPLEX,
+                    0.75,
+                    (255, 0, 0),
+                    1,
+                )
+                cv.putText(
+                    video_frame,
+                    "frame_count: {:d}".format(frame_count),
+                    (250, 50),
+                    cv.FONT_HERSHEY_SIMPLEX,
+                    0.75,
+                    (255, 0, 0),
+                    1,
+                )
+                left_eye_hull = cv.convexHull(left_points)
+                right_eye_hull = cv.convexHull(right_points)
+                cv.drawContours(video_frame, [left_eye_hull], -1, (0, 255, 0), 1)
+                cv.drawContours(video_frame, [right_eye_hull], -1, (0, 255, 0), 1)
+                continue
+            equal_ear_old = equal_ear
+            if blink_time > 0.06:
+                print("All eyes blink!")
+                blink_time = 0
+                tStart = None
                 blink_count = blink_count + 1
-            cv.putText(video_frame, 'left_ear: {:.3f}'.format(left_ear), (10, 30), cv.FONT_HERSHEY_SIMPLEX, 0.75,
-                       (255, 0, 0), 1)
-            cv.putText(video_frame, 'right_ear: {:.3f}'.format(right_ear), (10, 50), cv.FONT_HERSHEY_SIMPLEX, 0.75,
-                       (255, 0, 0), 1)
-            cv.putText(video_frame, 'blink_count: {:d}'.format(blink_count), (250, 30), cv.FONT_HERSHEY_SIMPLEX, 0.75,
-                       (255, 0, 0), 1)
-            cv.putText(video_frame, 'frame_count: {:d}'.format(frame_count), (250, 50), cv.FONT_HERSHEY_SIMPLEX, 0.75,
-                       (255, 0, 0), 1)
+            # if right_ear <= THRESHOLD:
+            #     print("Right eye blink!")
+            # if left_ear <= THRESHOLD:
+            #     print("Left eye blink!")
+            # if equal_ear <= AVG_THRESHOLD:
+            #     print("All eyes blink!")
+            # blink_count = blink_count + 1
+            cv.putText(
+                video_frame,
+                "left_ear: {:.3f}".format(left_ear),
+                (10, 30),
+                cv.FONT_HERSHEY_SIMPLEX,
+                0.75,
+                (255, 0, 0),
+                1,
+            )
+            cv.putText(
+                video_frame,
+                "right_ear: {:.3f}".format(right_ear),
+                (10, 50),
+                cv.FONT_HERSHEY_SIMPLEX,
+                0.75,
+                (255, 0, 0),
+                1,
+            )
+            cv.putText(
+                video_frame,
+                "blink_count: {:d}".format(blink_count),
+                (250, 30),
+                cv.FONT_HERSHEY_SIMPLEX,
+                0.75,
+                (255, 0, 0),
+                1,
+            )
+            cv.putText(
+                video_frame,
+                "frame_count: {:d}".format(frame_count),
+                (250, 50),
+                cv.FONT_HERSHEY_SIMPLEX,
+                0.75,
+                (255, 0, 0),
+                1,
+            )
             left_eye_hull = cv.convexHull(left_points)
             right_eye_hull = cv.convexHull(right_points)
             cv.drawContours(video_frame, [left_eye_hull], -1, (0, 255, 0), 1)
@@ -62,5 +157,5 @@ def check_blink():
     cv.destroyAllWindows()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     check_blink()
